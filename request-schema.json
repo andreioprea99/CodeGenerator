@@ -1,0 +1,86 @@
+{
+  "version": "1.0.0",
+  "type": "C#", // tipul e un enum [C#, Java],
+  "entities": [
+    {
+      "name": "entityName",
+      "fields": [
+        {
+          "name": "fieldName",
+          "type": "int", // enum [int, long, string, datetime, boolean]
+          "primaryKey": true, // optional, default false
+          "uniqueKey": true, // optional, default false
+          "maxSize": 255, // optional, default 255, pentru type string
+          "notNull": true, // optional, default false
+          "references": { // optional
+            "referencedEntity": "otherEntity",
+            "referencedField": "otherFieldName",
+            "type": "oneToOne" // enum [oneToOne, manyToOne, manyToMany]
+          }
+        }
+      ]
+    }
+  ],
+  "dtos": [
+    {
+      "name": "dto_name",
+      "fields": [
+        {
+          "name": "fieldName",
+          "projecting": {
+            "entityName": "name",
+            "fieldName": "name"
+          }
+        }
+      ],
+      "type": "read" // enum [read, insert, update]
+    }
+  ],
+  "repositories": [
+    {
+      "of": [ "dtoName" ] // numele dto-urilor
+    }
+  ],
+  "services": [
+    {
+      "name": "name"
+      //TO DO
+    }
+  ],
+  "controllers": [
+    {
+      "name": "name"
+      //TO DO
+    }
+  ],
+  "restClients": [
+    {
+      "name": "name"
+
+    } //TO DO
+  ],
+  "consumers": [
+    {
+      "name": "name"
+      //TO DO
+    }
+  ],
+  "producers": [
+    {
+      "name": "name"
+      //TO DO
+    }
+  ],
+  "microservices": [
+    {
+      "name": "msName",
+      "repositories": [ "repositoryName" ],
+      "services": [ "serviceName" ],
+      "restClients": [ "restClientName" ],
+      "consumers": [ "consumerName" ],
+      "producers": [ "producerName" ],
+      "controllers": [ "controllerName" ]
+    }
+  ]
+
+}
