@@ -7,11 +7,10 @@ using System.Threading.Tasks;
 
 namespace CodeGenerator.Models
 {
-    public class MainRequest
+    public class EntityModel
     {
-        [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string? Id { get; set; }
-        public List<EntityFieldModel> Fields { get; set; }
-}
+        [BsonElement("Name")]
+        public string Name { get; set; } = null!;
+    }
 }
