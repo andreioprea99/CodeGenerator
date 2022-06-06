@@ -9,8 +9,7 @@ namespace CodeGenerator.Models
 {
     public class EntityModel
     {
-        [BsonRepresentation(BsonType.ObjectId)]
-        [BsonElement("Name")]
         public string Name { get; set; } = null!;
+        public List<EntityFieldModel> Fields { get; set; } = null!;
     }
 }

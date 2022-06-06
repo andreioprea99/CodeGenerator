@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using CodeGenerator.DTO;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,6 @@ namespace CodeGenerator.Models
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; }
-        public List<EntityFieldModel> Fields { get; set; }
+        public MainRequestDTO Request { get; set; }
 }
 }

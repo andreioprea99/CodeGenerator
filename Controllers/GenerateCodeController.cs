@@ -1,4 +1,5 @@
-﻿using CodeGenerator.Models;
+﻿using CodeGenerator.DTO;
+using CodeGenerator.Models;
 using CodeGenerator.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -24,19 +25,16 @@ namespace CodeGenerator.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostRequest([FromBody] MainRequest request)
+        public async Task<IActionResult> PostRequest([FromBody] MainRequestDTO request)
         {
-            await _mongoDBService.InsertRequestAsync(request);
-            return CreatedAtAction(nameof(GetRequestByID), new { id = request.Id }, request);
+            var id = await _mongoDBService.InsertRequestAsync(request);
+            return CreatedAtAction(nameof(GetRequestByID), new { id }, request);
         }
 
         [HttpGet("{id}")]
-        public async Task<MainRequest> GetRequestByID(String id)
+        public async Task<ActionResult<MainRequest>> GetRequestByID(String id)
         {
-            var result = await _mongoDBService.GetRequestByID(id);
-            if (result.Count == 0)
-                return null;
-            return result[0];
+            return await _mongoDBService.GetRequestByID(id) ?? new ActionResult<MainRequest>(NotFound());
         }
     }
 }

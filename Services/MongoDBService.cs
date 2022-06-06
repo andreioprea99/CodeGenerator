@@ -1,4 +1,5 @@
-﻿using CodeGenerator.Models;
+﻿using CodeGenerator.DTO;
+using CodeGenerator.Models;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;
@@ -19,15 +20,17 @@ namespace CodeGenerator.Services
             _requestCollection = database.GetCollection<MainRequest>(settings.Value.CollectionName);
         }
 
-        public async Task InsertRequestAsync(MainRequest request)
+        public async Task<String> InsertRequestAsync(MainRequestDTO requestDTO)
         {
+            var request = new MainRequest();
+            request.Request = requestDTO;
             await _requestCollection.InsertOneAsync(request);
-            return;
+            return request.Id;
         }
 
-        public async Task<List<MainRequest>> GetRequestByID(String id)
+        public async Task<MainRequest> GetRequestByID(string id)
         {
-            return await _requestCollection.Find(x => x.Id.Equals(id)).ToListAsync();
+            return await _requestCollection.Find(x => x.Id.Equals(id)).FirstOrDefaultAsync();
         }
     }
 }

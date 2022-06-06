@@ -7,10 +7,6 @@ namespace CodeGenerator.Models
 {
     public class EntityFieldModel
     {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string? Id { get; set; }
-
         public string Type { get; set; } = EntityFieldType.Int;
         public string Name { get; set; } = "fieldName";
         public bool PrimaryKey { get; set; } = false;
