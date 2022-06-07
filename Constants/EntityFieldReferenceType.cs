@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace CodeGenerator.Constants
+﻿namespace CodeGenerator.Constants
 {
     public class EntityFieldReferenceType
     {
