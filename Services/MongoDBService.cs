@@ -1,5 +1,4 @@
-﻿using CodeGenerator.DTO;
-using CodeGenerator.Models;
+﻿using CodeGenerator.Models;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;

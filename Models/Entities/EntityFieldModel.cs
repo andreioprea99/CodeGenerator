@@ -1,12 +1,21 @@
-﻿using CodeGenerator.Constants;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace CodeGenerator.Models
 {
+    public enum EntityFieldType
+    {
+        Int,
+        Long,
+        String,
+        DateTime,
+        Boolean
+    }
     public class EntityFieldModel
     {
-        public string Type { get; set; } = EntityFieldType.Int;
-        public string Name { get; set; } = "fieldName";
+        public EntityFieldType Type { get; set; } = EntityFieldType.String;
+        [Required]
+        public string Name { get; set; }
         public bool PrimaryKey { get; set; } = false;
         public bool UniqueKey { get; set; } = false;
         public uint? MaxSize { get; set; } = 255;

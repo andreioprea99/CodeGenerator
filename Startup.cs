@@ -1,3 +1,4 @@
+using CodeGenerator.Generator;
 using CodeGenerator.Models;
 using CodeGenerator.Services;
 using Microsoft.AspNetCore.Builder;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 
 namespace CodeGenerator
 {
@@ -23,7 +25,8 @@ namespace CodeGenerator
         {
             services.Configure<MongoDBSettings>(Configuration.GetSection("MongoDB"));
             services.AddSingleton<MongoDBService>();
-            services.AddControllers();
+            services.AddSingleton<MainGenerator>();
+            services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "CodeGenerator", Version = "v1" });
