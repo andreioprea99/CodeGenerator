@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -21,6 +22,19 @@ namespace CodeGenerator.Generator
         public async Task Generate(MainRequestDTO request, string path)
         {
             await _generators[request.Type].Generate(request, path);
+        }
+
+        public static async Task InvokePSCommand(string command, string arguments)
+        {
+            Process process = new Process();
+            process.StartInfo.FileName = command;
+            process.StartInfo.Arguments = arguments;
+            process.StartInfo.RedirectStandardInput = true;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
+            process.StartInfo.CreateNoWindow = true;
+            process.Start();
+            await process.WaitForExitAsync();
         }
     }
 }

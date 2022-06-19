@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -171,20 +170,9 @@ namespace CodeGenerator.Generator
                 }
             }
             //Format generated code files
-            await InvokePSCommand("dotnet", $"format -w {rootPath} --folder");
+            await MainGenerator.InvokePSCommand("dotnet", $"format -w {rootPath} --folder");
         }
 
-        private async Task InvokePSCommand(string command, string arguments)
-        {
-            Process process = new Process();
-            process.StartInfo.FileName = command;
-            process.StartInfo.Arguments = arguments;
-            process.StartInfo.RedirectStandardInput = true;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            process.StartInfo.CreateNoWindow = true;
-            process.Start();
-            await process.WaitForExitAsync();
-        }
+        
     }
 }
