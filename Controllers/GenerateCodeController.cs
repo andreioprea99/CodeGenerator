@@ -52,7 +52,7 @@ namespace CodeGenerator.Controllers
             _logger.LogInformation($"File created at {path}");
             // Create directory for the generated project
             Directory.CreateDirectory(path);
-            _generator.Generate(specs.Request, path);
+            await _generator.Generate(specs.Request, path);
             return specs;
         }
     }
