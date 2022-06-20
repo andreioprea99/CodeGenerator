@@ -117,7 +117,7 @@
   "services": [
     {
       "name": "UserService",
-      "usingRepositories": [ "UserRepository", "UserInsitutionPairRepository" ]
+      "repositories": [ "UserRepository", "UserInsitutionPairRepository" ]
     }
   ],
   "controllers": [],

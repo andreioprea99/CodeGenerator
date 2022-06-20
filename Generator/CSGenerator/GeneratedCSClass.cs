@@ -7,7 +7,9 @@ namespace CodeGenerator.Generator
     public class GeneratedCSClass
     {
         public string Name { get; set; }
-        public string Namespace { get; set; }
+        public string Namespace { get; set; } = "External";
+        public bool ImplementsInterface { get; set; } = false;
+        private Dictionary<string, string> constructorProperties;
         public HashSet<string> ImportDependencies { get; } = new HashSet<string> { "System" };
         public List<GeneratedCSField> Fields { get; } = new List<GeneratedCSField>();
         public List<GeneratedCSMethod> Methods { get; } = new List<GeneratedCSMethod>();
@@ -17,7 +19,6 @@ namespace CodeGenerator.Generator
 
         public GeneratedCSClass(EntityModel entity)
         {
-            Namespace = "Entities";
             Name = entity.Name;
             foreach (var entityField in entity.Fields)
             {
@@ -67,17 +68,38 @@ namespace CodeGenerator.Generator
             ImportDependencies.Add(dependency);
         }
 
+        public void AddConstructorField(string type, string name)
+        {
+            if (constructorProperties == null)
+            {
+                constructorProperties = new Dictionary<string, string>();
+            }
+            constructorProperties.Add($"I{type}", name);
+            Fields.Add(new GeneratedCSField($"I{type}", name, "private"));
+        }
+
+        private string GenerateConstructor()
+        {
+            if (constructorProperties == null)
+                return "";
+            return $"public {Name} ({string.Join(", ", constructorProperties.Select(pair => pair.Key + ' ' + pair.Value))})"
+                + "{\n"
+                + $"{ string.Join("\n", constructorProperties.Values.Select(name => $"this.{name} = {name};" )) }"
+                + "}\n";
+        }
+
         public override string ToString()
         {
             var dependencies = string.Join("\n", ImportDependencies.Select(dependency => $"using {dependency};"));
             var fields = string.Join("\n", Fields) + "\n"; 
             var methods = string.Join("\n", Methods) + "\n";
             return dependencies + "\n"
-                + "namespace " + Namespace + "\n"
+                + "namespace " + Namespace + $"{(ImplementsInterface ? $" : I{Name}" : "")}" + "\n"
                 + "{\n"
                 + "public class " + Name + "\n"
                 + "{\n"
                 + fields
+                + GenerateConstructor()
                 + methods
                 + "}\n"
                 + "}\n"

@@ -7,5 +7,7 @@ namespace CodeGenerator.Models
     {
         [Required]
         public List<string> DTOs { get; set; } = null!;
+        [Required]
+        public string Name { get; set; } = null!;
     }
 }
