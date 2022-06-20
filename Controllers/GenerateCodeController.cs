@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -34,26 +35,33 @@ namespace CodeGenerator.Controllers
         public async Task<IActionResult> PostRequest([FromBody] MainRequestDTO request)
         {
             var id = await _mongoDBService.InsertRequestAsync(request);
-            return CreatedAtAction(nameof(GetRequestByID), new { id }, request);
+            string path = Path.Combine(_environment.ContentRootPath, $"../GeneratedCode/{id}/");
+            _logger.LogInformation($"File created at {path}");
+            // Create directory for the generated project
+            Directory.CreateDirectory(path);
+            await _generator.Generate(request, path);
+            return CreatedAtAction(nameof(GetByID), new { id }, request);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<MainRequest>> GetRequestByID([FromRoute] String id)
+        public async Task<IActionResult> GetByID([FromRoute] String id)
         {
             if (!validId.Match(id).Success)
             {
                 return BadRequest(new { error = "The id should be a hex string of 24 characters." });
             }
+            string fileName = $"{id}.zip";
+            string sourcePath = Path.Combine(_environment.ContentRootPath, $"../GeneratedCode/{id}/");
+            string destinationPath = Path.Combine(_environment.ContentRootPath, $"../GeneratedCode/{fileName}");
+            if (!Directory.Exists(sourcePath))
+            {
+                return NotFound(new { error = "The id is not registered" });
+            }
+            // Delete old archive if exists
+            System.IO.File.Delete(destinationPath);
 
-            var specs = await _mongoDBService.GetRequestByID(id);
-            if (specs == null)
-                return NotFound();
-            string path = Path.Combine(_environment.ContentRootPath, $"../GeneratedCode/{id}/");
-            _logger.LogInformation($"File created at {path}");
-            // Create directory for the generated project
-            Directory.CreateDirectory(path);
-            _generator.Generate(specs.Request, path);
-            return specs;
+            ZipFile.CreateFromDirectory(sourcePath, destinationPath);
+            return File(System.IO.File.ReadAllBytes(destinationPath), "application/zip", fileName);
         }
     }
 }

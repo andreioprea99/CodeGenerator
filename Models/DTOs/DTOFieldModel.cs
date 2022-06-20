@@ -7,6 +7,6 @@ namespace CodeGenerator.Models
         [Required]
         public string Name { get; set; } = "dto_name";
         [Required]
-        public DTOFieldModelProjection Projection { get; set; } = null!;
+        public DTOFieldModelProjection Projecting { get; set; } = null!;
     }
 }
