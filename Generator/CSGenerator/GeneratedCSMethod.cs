@@ -21,7 +21,7 @@ namespace CodeGenerator.Generator
 
         public string ExtractMethodSignature()
         {
-            return $"{AccessModifier} {ReturnType} {Name} ({string.Join(", ", Parameters.Select(pair => pair.Key + ' ' + pair.Value))})";
+            return $"{AccessModifier} {ReturnType} {Name} ({string.Join(", ", Parameters.Select(pair => pair.Key + ' ' + pair.Value))});";
         }
 
         public override string ToString()

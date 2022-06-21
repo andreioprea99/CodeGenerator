@@ -3,12 +3,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CodeGenerator.Models
 {
-    public class MicroserviceModel
+    public class MicroserviceModel : BaseComponentModel
     {
-        [Required]
-        public string Name { get; set; } = "dto_name";
-        public List<string> Repositories { get; set; }
-        public List<string> Services { get; set; }
-        public List<string> Contollers { get; set; }
+        public List<string> Entities { get; set; } = new List<string>();
+        public List<string> DTOs { get; set; } = new List<string>();
+        public List<string> Repositories { get; set; } = new List<string>();
+        public List<string> Services { get; set; } = new List<string>();
+        public List<string> Contollers { get; set; } = new List<string>();
     }
 }

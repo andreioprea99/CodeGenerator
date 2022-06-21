@@ -2,9 +2,7 @@
 
 namespace CodeGenerator.Models
 {
-    public class ControllerModel
+    public class ControllerModel : BaseComponentModel
     {
-        [Required]
-        public string Name { get; set; } = null!;
     }
 }

@@ -4,10 +4,8 @@ using System.Linq;
 
 namespace CodeGenerator.Generator
 {
-    public class GeneratedCSInterface
+    public class GeneratedCSInterface : BaseGeneratedClass
     {
-        public string Name { get; set; }
-        public string Namespace { get; set; } = "External";
         public HashSet<string> ImportDependencies { get; } = new HashSet<string> { "System" };
         public List<string> MethodsSignatures { get; }
 
@@ -21,7 +19,7 @@ namespace CodeGenerator.Generator
 
         public override string ToString()
         {
-            var methods = string.Join(";\n", MethodsSignatures) + "\n";
+            var methods = string.Join("\n", MethodsSignatures) + "\n";
             return "namespace " + Namespace + "\n"
                 + "{\n"
                 + "public interface " + Name + "\n"

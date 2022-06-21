@@ -8,11 +8,11 @@ namespace CodeGenerator.Generator
     {
         Language Type { get; }
         public Task Generate(MainRequestDTO specs, string path);
-        public Task<List<GeneratedCSClass>> GenerateEntities(MainRequestDTO specs);
-        public Task<List<GeneratedCSClass>> GenerateDTOs(MainRequestDTO specs, Dictionary<string, List<GeneratedCSClass>> generatedClasses);
-        public Task<List<GeneratedCSClass>> GenerateControllers(MainRequestDTO specs, Dictionary<string, List<GeneratedCSClass>> generatedClasses);
-        public Task<List<GeneratedCSClass>> GenerateRepositories(MainRequestDTO specs, Dictionary<string, List<GeneratedCSClass>> generatedClasses);
-        public Task<List<GeneratedCSClass>> GenerateServices(MainRequestDTO specs, Dictionary<string, List<GeneratedCSClass>> generatedClasses);
-        public Task<List<GeneratedCSClass>> GenerateMicroservices(MainRequestDTO specs, Dictionary<string, List<GeneratedCSClass>> generatedClasses, string path);
+        public Task<List<BaseGeneratedClass>> GenerateEntities(MainRequestDTO specs);
+        public Task<List<BaseGeneratedClass>> GenerateDTOs(MainRequestDTO specs);
+        public Task<List<BaseGeneratedClass>> GenerateControllers(MainRequestDTO specs);
+        public Task<List<BaseGeneratedClass>> GenerateRepositories(MainRequestDTO specs);
+        public Task<List<BaseGeneratedClass>> GenerateServices(MainRequestDTO specs);
+        public Task<List<BaseGeneratedClass>> WriteMicroservices(MainRequestDTO specs, Dictionary<string, List<BaseGeneratedClass>> generatedClasses, string path);
     }
 }

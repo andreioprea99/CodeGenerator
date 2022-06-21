@@ -3,10 +3,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CodeGenerator.Models
 {
-    public class EntityModel
+    public class EntityModel : BaseComponentModel
     {
-        [Required]
-        public string Name { get; set; } = null!;
         [Required]
         public List<EntityFieldModel> Fields { get; set; } = null!;
 

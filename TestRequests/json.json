@@ -118,12 +118,17 @@
     {
       "name": "UserService",
       "repositories": [ "UserRepository", "UserInsitutionPairRepository" ]
+    },
+    {
+      "name": "ExternalService"
     }
   ],
   "controllers": [],
   "microservices": [
     {
       "name": "testMicro",
+      "entities": ["User", "Institution"],
+      "dtos": [ "UserReadDTO", "UserInsertDTO", "UserInstitutionPair" ],
       "services": [ "UserService" ],
       "repositories": [ "UserRepository", "UserInsitutionPairRepository" ]
     }

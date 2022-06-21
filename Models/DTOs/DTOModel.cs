@@ -9,10 +9,8 @@ namespace CodeGenerator.Models
         Insert,
         Update
     }
-    public class DTOModel
+    public class DTOModel : BaseComponentModel
     {
-        [Required]
-        public string Name { get; set; } = "dto_name";
         public DTOType Type { get; set; } = DTOType.Read;
         [Required]
         public List<DTOFieldModel> Fields { get; set; } = null!;

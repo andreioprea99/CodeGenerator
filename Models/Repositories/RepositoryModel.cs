@@ -3,11 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CodeGenerator.Models
 {
-    public class RepositoryModel
+    public class RepositoryModel : BaseComponentModel
     {
         [Required]
-        public List<string> DTOs { get; set; } = null!;
-        [Required]
-        public string Name { get; set; } = null!;
+        public List<string> DTOs { get; set; } = new List<string>();
     }
 }

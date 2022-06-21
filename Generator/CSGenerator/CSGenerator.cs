@@ -26,43 +26,43 @@ namespace CodeGenerator.Generator
 
         public async Task Generate(MainRequestDTO specs, string path)
         {
-            Dictionary<string, List<GeneratedCSClass>> generatedClasses = new Dictionary<string, List<GeneratedCSClass>>();
+            Dictionary<string, List<BaseGeneratedClass>> generatedFiles = new Dictionary<string, List<BaseGeneratedClass>>();
             if (specs.Entities != null)
             {
-                generatedClasses[entitiesDictKey] = await GenerateEntities(specs);
+                generatedFiles[entitiesDictKey] = await GenerateEntities(specs);
             }
             if (specs.DTOs != null)
             {
-                generatedClasses[dtosDictKey] = await GenerateDTOs(specs, generatedClasses);
+                generatedFiles[dtosDictKey] = await GenerateDTOs(specs);
             }
 
             if (specs.Repositories != null)
             {
-                generatedClasses[repositoriesDictKey] = await GenerateRepositories(specs, generatedClasses);
+                generatedFiles[repositoriesDictKey] = await GenerateRepositories(specs);
             }
             if (specs.Services != null)
             {
-                generatedClasses[servicesDictKey] = await GenerateServices(specs, generatedClasses);
+                generatedFiles[servicesDictKey] = await GenerateServices(specs);
             }
             if (specs.Controllers != null)
             {
-                await GenerateControllers(specs, generatedClasses);
+                await GenerateControllers(specs);
             }
             if (specs.Microservices != null)
             {
-                await GenerateMicroservices(specs, generatedClasses, path);
+                await WriteMicroservices(specs, generatedFiles, path);
             }
-            await WriteClasses(generatedClasses, path);
+            await WriteClasses(generatedFiles, path, true);
         }
 
-        public async Task<List<GeneratedCSClass>> GenerateEntities(MainRequestDTO specs)
+        public async Task<List<BaseGeneratedClass>> GenerateEntities(MainRequestDTO specs)
         {
             _logger.LogInformation($"Generating entities...");
             // Transform list in dictionary to ease dependency computing
             Dictionary<string, GeneratedCSClass> generatedEntities = specs.Entities.ToDictionary(entity => entity.Name, entity => new GeneratedCSClass(entity));
             ComputeDependencies(specs.Entities, generatedEntities);
 
-            return generatedEntities.Values.ToList();
+            return new List<BaseGeneratedClass>(generatedEntities.Values.ToList());
         }
         private void ComputeDependencies(List<EntityModel> entities, Dictionary<string, GeneratedCSClass> generatedEntities)
         {
@@ -115,10 +115,10 @@ namespace CodeGenerator.Generator
                 }
             }
         }
-        public async Task<List<GeneratedCSClass>> GenerateDTOs(MainRequestDTO specs, Dictionary<string, List<GeneratedCSClass>> generatedClasses)
+        public async Task<List<BaseGeneratedClass>> GenerateDTOs(MainRequestDTO specs)
         {
             _logger.LogInformation($"Generating DTOs...");
-            List<GeneratedCSClass> generatedDTOs = new List<GeneratedCSClass>();
+            List<BaseGeneratedClass> generatedDTOs = new List<BaseGeneratedClass>();
             Dictionary<string, EntityModel> nameEntityMapping = specs.Entities.ToDictionary(entity => entity.Name, entity => entity);
             foreach (var dto in specs.DTOs)
             {
@@ -133,17 +133,17 @@ namespace CodeGenerator.Generator
             return generatedDTOs;
         }
 
-        public async Task<List<GeneratedCSClass>> GenerateControllers(MainRequestDTO specs, Dictionary<string, List<GeneratedCSClass>> generatedClasses)
+        public async Task<List<BaseGeneratedClass>> GenerateControllers(MainRequestDTO specs)
         {
             _logger.LogInformation($"Generating controllers...");
 
-            return new List<GeneratedCSClass>();
+            return new List<BaseGeneratedClass>();
         }
 
-        public async Task<List<GeneratedCSClass>> GenerateRepositories(MainRequestDTO specs, Dictionary<string, List<GeneratedCSClass>> generatedClasses)
+        public async Task<List<BaseGeneratedClass>> GenerateRepositories(MainRequestDTO specs)
         {
             _logger.LogInformation($"Generating repositories...");
-            List<GeneratedCSClass> generatedRepositories = new List<GeneratedCSClass>();
+            List<BaseGeneratedClass> generatedRepositories = new List<BaseGeneratedClass>();
             Dictionary<string, DTOModel> nameDTOMapping = specs.DTOs.ToDictionary(dto => dto.Name, dto => dto);
             foreach (var repository in specs.Repositories)
             {
@@ -165,14 +165,15 @@ namespace CodeGenerator.Generator
                     }
                 }
                 generatedRepositories.Add(generatedRepository);
+                generatedRepositories.Add(new GeneratedCSInterface(generatedRepository));
             }
             return generatedRepositories;
         }
 
-        public async Task<List<GeneratedCSClass>> GenerateServices(MainRequestDTO specs, Dictionary<string, List<GeneratedCSClass>> generatedClasses)
+        public async Task<List<BaseGeneratedClass>> GenerateServices(MainRequestDTO specs)
         {
             _logger.LogInformation($"Generating services at...");
-            List<GeneratedCSClass> generatedServices = new List<GeneratedCSClass>();
+            List<BaseGeneratedClass> generatedServices = new List<BaseGeneratedClass>();
             Dictionary<string, RepositoryModel> nameRepositoryMapping = specs.Repositories.ToDictionary(repository => repository.Name, repository => repository);
             foreach (var service in specs.Services)
             {
@@ -182,18 +183,46 @@ namespace CodeGenerator.Generator
                     generatedService.AddConstructorField(repositoryName, $"{repositoryName}Object");
                 }
                 generatedServices.Add(generatedService);
+                generatedServices.Add(new GeneratedCSInterface(generatedService));
             }
             return generatedServices;
         }
 
-        public async Task<List<GeneratedCSClass>> GenerateMicroservices(MainRequestDTO specs, Dictionary<string, List<GeneratedCSClass>> generatedClasses, string path)
+        public async Task<List<BaseGeneratedClass>> WriteMicroservices(MainRequestDTO specs, Dictionary<string, List<BaseGeneratedClass>> generatedClasses, string path)
         {
-            _logger.LogInformation($"Generating microservices...");
-            return new List<GeneratedCSClass>();
+            _logger.LogInformation($"Writing microservices...");
+            foreach (var microservice in specs.Microservices)
+            {
+                Dictionary<string, List<BaseGeneratedClass>> microserviceGeneratedClasses = new Dictionary<string, List<BaseGeneratedClass>>();
+
+                microserviceGeneratedClasses[entitiesDictKey] = UpdateGeneratedClassesNamespace(microservice.Entities, generatedClasses.GetValueOrDefault(entitiesDictKey), microservice.Name);
+                microserviceGeneratedClasses[dtosDictKey] = UpdateGeneratedClassesNamespace(microservice.DTOs, generatedClasses.GetValueOrDefault(dtosDictKey), microservice.Name);
+                microserviceGeneratedClasses[repositoriesDictKey] = UpdateGeneratedClassesNamespace(microservice.Repositories, generatedClasses.GetValueOrDefault(repositoriesDictKey), microservice.Name);
+                microserviceGeneratedClasses[servicesDictKey] = UpdateGeneratedClassesNamespace(microservice.Services, generatedClasses.GetValueOrDefault(servicesDictKey), microservice.Name);
+                microserviceGeneratedClasses[controllersDictKey] = UpdateGeneratedClassesNamespace(microservice.Contollers, generatedClasses.GetValueOrDefault(controllersDictKey), microservice.Name);
+
+                await WriteClasses(microserviceGeneratedClasses, path);
+            }
+            return new List<BaseGeneratedClass>();
         }
 
-        private async Task WriteClasses(Dictionary<string, List<GeneratedCSClass>> generatedClasses, string rootPath)
+        private static List<BaseGeneratedClass> UpdateGeneratedClassesNamespace(List<string> modelsNames, List<BaseGeneratedClass> generatedClasses, string microserviceName)
         {
+            if (generatedClasses == null)
+                return new List<BaseGeneratedClass>();
+            List<BaseGeneratedClass> result = new List<BaseGeneratedClass>();
+            result = generatedClasses.Where(generatedClass => modelsNames.Contains(generatedClass.Name) ||
+                                                             (modelsNames.Contains(generatedClass.Name[1..]) && generatedClass is GeneratedCSInterface)).ToList();
+            result.AsParallel().ForAll(generatedClass => generatedClass.Namespace = microserviceName);
+            return result;
+        }
+
+        private static async Task WriteClasses(Dictionary<string, List<BaseGeneratedClass>> generatedClasses, string rootPath, bool usingDefaultNamespace = false)
+        {
+            if (usingDefaultNamespace)
+            {
+                generatedClasses.ToDictionary(entry => entry.Key, entry => entry.Value.Where(generatedClass => generatedClass.Namespace == "External"));
+            }
             Directory.CreateDirectory(rootPath);
             foreach (var entry in generatedClasses)
             {

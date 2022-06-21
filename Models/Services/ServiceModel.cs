@@ -3,10 +3,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CodeGenerator.Models
 {
-    public class ServiceModel
+    public class ServiceModel : BaseComponentModel
     {
-        [Required]
-        public string Name { get; set; } = null!;
-        public List<string> Repositories { get; set; }
+        public List<string> Repositories { get; set; } = new List<string>();
     }
 }
