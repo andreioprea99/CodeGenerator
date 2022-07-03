@@ -26,15 +26,17 @@ namespace CodeGenerator.Generator
 
         public static async Task PushInGit(GitRequestModel gitDetails, string generatedCodeDirectory)
         {
-            await InvokePSCommand("git init", "", generatedCodeDirectory);
-            await InvokePSCommand("git config user.email", "code-generator@example.com", generatedCodeDirectory);
-            await InvokePSCommand("git config user.name", gitDetails.UserName, generatedCodeDirectory);
-            await InvokePSCommand("git remode add origin", $"https://{gitDetails.UserName}:{gitDetails.Password}@{gitDetails.URL}", generatedCodeDirectory);
-            await InvokePSCommand("git fetch origin", "", generatedCodeDirectory);
-            await InvokePSCommand("git checkout", $"-b {gitDetails.Branch}", generatedCodeDirectory);
-            await InvokePSCommand("git add", ".", generatedCodeDirectory);
-            await InvokePSCommand("git commit", "-m Generated Code", generatedCodeDirectory);
-            await InvokePSCommand("git push", "--set-upstream origin generated-code", generatedCodeDirectory);
+            Console.WriteLine(generatedCodeDirectory);
+            await InvokePSCommand("git", "init", generatedCodeDirectory);
+            await InvokePSCommand("git", "config user.email code-generator@example.com", generatedCodeDirectory);
+            await InvokePSCommand("git", $"config user.name {gitDetails.UserName}", generatedCodeDirectory);
+            await InvokePSCommand("git", $"remote add origin https://{gitDetails.UserName}:{gitDetails.Password}@{gitDetails.URL}", generatedCodeDirectory);
+            await InvokePSCommand("git", "fetch origin", generatedCodeDirectory);
+            await InvokePSCommand("git", $"pull origin {gitDetails.Branch}", generatedCodeDirectory);
+            await InvokePSCommand("git", "checkout -b generated-code", generatedCodeDirectory);
+            await InvokePSCommand("git", "add .", generatedCodeDirectory);
+            await InvokePSCommand("git", "commit -m \"Generated Code\"", generatedCodeDirectory);
+            await InvokePSCommand("git", "push --set-upstream origin generated-code", generatedCodeDirectory);
         }
 
         public static async Task InvokePSCommand(string command, string arguments, string workingDirectory = ".")

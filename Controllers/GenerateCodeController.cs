@@ -104,7 +104,7 @@ namespace CodeGenerator.Controllers
             {
                 return BadRequest(new { error = "The id should be a hex string of 24 characters." });
             }
-            string path = Path.Combine(_environment.ContentRootPath, $"../GeneratedCode/{id}/");
+            string path = Path.Combine(_environment.ContentRootPath, ".." , "GeneratedCode", id, ".");
             if (!Directory.Exists(path))
             {
                 return NotFound(new { error = "The id is not registered" });
