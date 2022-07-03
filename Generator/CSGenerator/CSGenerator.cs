@@ -17,6 +17,7 @@ namespace CodeGenerator.Generator
         private const string servicesDictKey = "Services";
         private const string controllersDictKey = "Controllers";
         private const string microServicesDictKey = "Microservices";
+        private const string restClientsDictKey = "RestClients";
         public Language Type { get; } = Language.CS;
 
         public CSGenerator(ILogger<CSGenerator> logger)
@@ -46,7 +47,11 @@ namespace CodeGenerator.Generator
             }
             if (specs.Controllers != null)
             {
-                await GenerateControllers(specs);
+                generatedFiles[controllersDictKey] = await GenerateControllers(specs);
+            }
+            if (specs.RestClients != null)
+            {
+                generatedFiles[restClientsDictKey] = await GenerateRestClients(specs, generatedFiles[controllersDictKey]);
             }
             if (specs.Microservices != null)
             {
@@ -136,8 +141,53 @@ namespace CodeGenerator.Generator
         public async Task<List<BaseGeneratedClass>> GenerateControllers(MainRequestDTO specs)
         {
             _logger.LogInformation($"Generating controllers...");
+            List<BaseGeneratedClass> generatedControllers = new List<BaseGeneratedClass>();
 
-            return new List<BaseGeneratedClass>();
+            foreach (var controller in specs.Controllers)
+            {
+                // Add default controller details
+                var generatedController = new GeneratedCSClass { Name = controller.Name };
+                generatedController.ClassAnnotations.Add("[ApiController]");
+                generatedController.AddImportDependency("Microsoft.AspNetCore.Mvc");
+                generatedController.ImplementsInterface = "Controller";
+                // Build constructor
+                foreach (var serviceName in controller.Services)
+                {
+                    generatedController.AddConstructorField(serviceName, $"{serviceName}Object");
+                }
+                // Build methods
+                foreach (var route in controller.Routes)
+                {
+                    string methodName = "", requestTypeAnnotation = "";
+                    var parameters = route.Parameters.ToDictionary(parameter => parameter.Name, parameter => parameter.Type);
+                    switch (route.Type)
+                    {
+                        case ControllerRouteModel.RouteAction.get:
+                            methodName = "GetBy";
+                            requestTypeAnnotation = "[HttpGet]";
+                            break;
+                        case ControllerRouteModel.RouteAction.post:
+                            methodName = "Post";
+                            requestTypeAnnotation = "[HttpPost]";
+                            break;
+                        case ControllerRouteModel.RouteAction.put:
+                            methodName = "Put";
+                            requestTypeAnnotation = "[HttpPut]";
+                            break;
+                        case ControllerRouteModel.RouteAction.delete:
+                            methodName = "DeleteBy";
+                            requestTypeAnnotation = "[HttpDelete]";
+                            break;
+                    }
+                    methodName += string.Join("", parameters.Keys);
+                    GeneratedCSMethod generatedMethod = new GeneratedCSMethod(route.ResponseType, methodName, parameters);
+                    generatedMethod.MethodAnnotations.Add($"[Route(\"{route.Path}\")]");
+                    generatedMethod.MethodAnnotations.Add(requestTypeAnnotation);
+                    generatedController.Methods.Add(generatedMethod);
+                }
+                generatedControllers.Add(generatedController);
+            }
+            return generatedControllers;
         }
 
         public async Task<List<BaseGeneratedClass>> GenerateRepositories(MainRequestDTO specs)
@@ -154,13 +204,13 @@ namespace CodeGenerator.Generator
                     switch (dto.Type)
                     {
                         case DTOType.Read:
-                            generatedRepository.AddMethod(dto.Name, $"Get{dto.Name}ById", new Dictionary<string, string> { { "long", "id" } });
+                            generatedRepository.AddMethod(dto.Name, $"Get{dto.Name}ById", new Dictionary<string, string> { { "id", "long" } });
                             break;
                         case DTOType.Insert:
-                            generatedRepository.AddMethod("void", $"Insert{dto.Name}", new Dictionary<string, string> { { dto.Name, $"{dto.Name}Object" } });
+                            generatedRepository.AddMethod("void", $"Insert{dto.Name}", new Dictionary<string, string> { { $"{dto.Name}Object", dto.Name } });
                             break;
                         case DTOType.Update:
-                            generatedRepository.AddMethod("void", $"Update{dto.Name}", new Dictionary<string, string> { { dto.Name, $"{dto.Name}Object" } });
+                            generatedRepository.AddMethod("void", $"Update{dto.Name}", new Dictionary<string, string> { { $"{dto.Name}Object", dto.Name } });
                             break;
                     }
                 }
@@ -174,7 +224,6 @@ namespace CodeGenerator.Generator
         {
             _logger.LogInformation($"Generating services at...");
             List<BaseGeneratedClass> generatedServices = new List<BaseGeneratedClass>();
-            Dictionary<string, RepositoryModel> nameRepositoryMapping = specs.Repositories.ToDictionary(repository => repository.Name, repository => repository);
             foreach (var service in specs.Services)
             {
                 var generatedService = new GeneratedCSClass { Name = service.Name };
@@ -188,6 +237,22 @@ namespace CodeGenerator.Generator
             return generatedServices;
         }
 
+        public async Task<List<BaseGeneratedClass>> GenerateRestClients (MainRequestDTO specs, List<BaseGeneratedClass> controllers)
+        {
+            _logger.LogInformation($"Generating rest clients...");
+            List<BaseGeneratedClass> generatedRestClients = new List<BaseGeneratedClass>();
+            Dictionary<string, GeneratedCSClass> controllersDictionary = controllers.ToDictionary(controler => controler.Name, controller => (GeneratedCSClass)controller);
+            foreach (var restClient in specs.RestClients)
+            {
+                var generatedRestClient = new GeneratedCSClass { Name = restClient.Name };
+                foreach (var method in controllersDictionary[restClient.For].Methods)
+                {
+                    generatedRestClient.Methods.Add(GeneratedCSMethod.CopyMethod(method));
+                }
+                generatedRestClients.Add(generatedRestClient);
+            }
+            return generatedRestClients;
+        }
         public async Task<List<BaseGeneratedClass>> WriteMicroservices(MainRequestDTO specs, Dictionary<string, List<BaseGeneratedClass>> generatedClasses, string path)
         {
             _logger.LogInformation($"Writing microservices...");
@@ -199,7 +264,8 @@ namespace CodeGenerator.Generator
                 microserviceGeneratedClasses[dtosDictKey] = UpdateGeneratedClassesNamespace(microservice.DTOs, generatedClasses.GetValueOrDefault(dtosDictKey), microservice.Name);
                 microserviceGeneratedClasses[repositoriesDictKey] = UpdateGeneratedClassesNamespace(microservice.Repositories, generatedClasses.GetValueOrDefault(repositoriesDictKey), microservice.Name);
                 microserviceGeneratedClasses[servicesDictKey] = UpdateGeneratedClassesNamespace(microservice.Services, generatedClasses.GetValueOrDefault(servicesDictKey), microservice.Name);
-                microserviceGeneratedClasses[controllersDictKey] = UpdateGeneratedClassesNamespace(microservice.Contollers, generatedClasses.GetValueOrDefault(controllersDictKey), microservice.Name);
+                microserviceGeneratedClasses[controllersDictKey] = UpdateGeneratedClassesNamespace(microservice.Controllers, generatedClasses.GetValueOrDefault(controllersDictKey), microservice.Name);
+                microserviceGeneratedClasses[restClientsDictKey] = UpdateGeneratedClassesNamespace(microservice.RestClients, generatedClasses.GetValueOrDefault(restClientsDictKey), microservice.Name);
 
                 await WriteClasses(microserviceGeneratedClasses, path);
             }

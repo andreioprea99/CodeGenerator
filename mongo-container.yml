@@ -3,13 +3,19 @@ version: '3.1'
 
 services:
 
+  webapp:
+    build: .
+    image: code-generator:latest
+    ports:
+      - 80:80
+      - 443:443
   mongo:
     image: mongo
     restart: always
     volumes:
-      - mongo_volume:/data/db
+      - mongo_volumetest3:/data/db
     ports:
-      - 27017:27017
+      - 27017:27017 
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
@@ -25,4 +31,4 @@ services:
       ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
 
 volumes:
-  mongo_volume:
+  mongo_volumetest3:

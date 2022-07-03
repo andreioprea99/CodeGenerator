@@ -13,8 +13,8 @@ namespace CodeGenerator.Generator
         {
             Name = $"I{generatedClass.Name}";
             Namespace = generatedClass.Namespace;
-            MethodsSignatures = generatedClass.Methods.Select(method => method.ExtractMethodSignature()).ToList();
-            generatedClass.ImplementsInterface = true;
+            MethodsSignatures = generatedClass.Methods.Select(method => method.ExtractMethodSignature() + ";").ToList();
+            generatedClass.ImplementsInterface = Name;
         }
 
         public override string ToString()

@@ -34,13 +34,47 @@ namespace CodeGenerator.Controllers
         [Consumes("application/json")]
         public async Task<IActionResult> PostRequest([FromBody] MainRequestDTO request)
         {
-            var id = await _mongoDBService.InsertRequestAsync(request);
+            var id = "";
+            try
+            {
+                id = await _mongoDBService.InsertRequestAsync(request);
+            }
+            catch
+            {
+                return StatusCode(429);
+            }
+            
             string path = Path.Combine(_environment.ContentRootPath, $"../GeneratedCode/{id}/");
-            _logger.LogInformation($"File created at {path}");
+            _logger.LogInformation($"Source files for {id} created at {path}");
             // Create directory for the generated project
             Directory.CreateDirectory(path);
             await _generator.Generate(request, path);
             return CreatedAtAction(nameof(GetByID), new { id }, request);
+        }
+
+        [HttpPost("{id}")]
+        public async Task<IActionResult> PostIdRequest([FromRoute] String id)
+        {
+            MainRequest oldRequest;
+            if (!validId.Match(id).Success)
+            {
+                return BadRequest(new { error = "The id should be a hex string of 24 characters." });
+            }
+            try
+            {
+                oldRequest = await _mongoDBService.GetRequestByID(id);
+            }
+            catch
+            {
+                return NotFound(new { error = $"The request with the id {id} doesn't exist" });
+            }
+
+            string path = Path.Combine(_environment.ContentRootPath, $"../GeneratedCode/{id}/");
+            _logger.LogInformation($"Source files for {id} created at {path}");
+            // Create directory for the generated project
+            Directory.CreateDirectory(path);
+            await _generator.Generate(oldRequest.Request, path);
+            return CreatedAtAction(nameof(GetByID), new { id }, oldRequest.Request);
         }
 
         [HttpGet("{id}")]
@@ -62,6 +96,28 @@ namespace CodeGenerator.Controllers
 
             ZipFile.CreateFromDirectory(sourcePath, destinationPath);
             return File(System.IO.File.ReadAllBytes(destinationPath), "application/zip", fileName);
+        }
+        [HttpPost("{id}/git")]
+        public async Task<IActionResult> PostGithub([FromRoute] String id, [FromBody] GitRequestModel gitDetails)
+        {
+            if (!validId.Match(id).Success)
+            {
+                return BadRequest(new { error = "The id should be a hex string of 24 characters." });
+            }
+            string path = Path.Combine(_environment.ContentRootPath, $"../GeneratedCode/{id}/");
+            if (!Directory.Exists(path))
+            {
+                return NotFound(new { error = "The id is not registered" });
+            }
+            try
+            {
+                await MainGenerator.PushInGit(gitDetails, path);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+            return Ok();
         }
     }
 }

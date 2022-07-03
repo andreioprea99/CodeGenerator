@@ -1,13 +1,13 @@
 {
   "version": "1.0.0",
-  "type": "C#", // tipul e un enum [C#, Java],
+  "type": "CS", // tipul e un enum [CS],
   "entities": [
     {
       "name": "entityName",
       "fields": [
         {
           "name": "fieldName",
-          "type": "int", // enum [int, long, string, datetime, boolean]
+          "type": "Int", // enum [Int, Long, String, DateTime, Boolean]
           "primaryKey": true, // optional, default false
           "uniqueKey": true, // optional, default false
           "maxSize": 255, // optional, default 255, pentru type string
@@ -15,7 +15,7 @@
           "references": { // optional
             "referencedEntity": "otherEntity",
             "referencedField": "otherFieldName",
-            "type": "oneToOne" // enum [oneToOne, manyToOne, manyToMany]
+            "type": "OneToOne" // enum [OneToOne, ManyToOne, ManyToMany]
           }
         }
       ]
@@ -38,47 +38,49 @@
   ],
   "repositories": [
     {
-      "of": [ "dtoName" ] // numele dto-urilor
+      "name": "repositoryName",
+      "of": [ "dtoName" ]
     }
   ],
   "services": [
     {
-      "name": "name"
-      //TO DO
+      "name": "serviceName",
+      "repositories": [ "repositoryName" ]
     }
   ],
   "controllers": [
     {
-      "name": "name"
-      //TO DO
+      "name": "controllerName",
+      "routes": [
+        {
+          "path": "/api",
+          "type": "get", // enum [get, post, put, delete]
+          "responseType": "string",
+          "parameters": [
+            {
+              "name": "paramName",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "services": [ "serviceName" ]
     }
   ],
   "restClients": [
     {
-      "name": "name"
-
-    } //TO DO
-  ],
-  "consumers": [
-    {
-      "name": "name"
-      //TO DO
-    }
-  ],
-  "producers": [
-    {
-      "name": "name"
-      //TO DO
+      "name": "restClientName",
+      "for": "controllerName"
     }
   ],
   "microservices": [
     {
       "name": "msName",
+      "entities": [ "entityName" ],
+      "dtos": [ "dtoName" ],
       "repositories": [ "repositoryName" ],
       "services": [ "serviceName" ],
       "restClients": [ "restClientName" ],
-      "consumers": [ "consumerName" ],
-      "producers": [ "producerName" ],
       "controllers": [ "controllerName" ]
     }
   ]

@@ -16,5 +16,6 @@ namespace CodeGenerator.Models
         public List<RepositoryModel> Repositories { get; set; }
         public List<ServiceModel> Services { get; set; }
         public List<MicroserviceModel> Microservices { get; set; }
+        public List<RestClientModel> RestClients { get; set; }
     }
 }

@@ -9,6 +9,7 @@ namespace CodeGenerator.Models
         public List<string> DTOs { get; set; } = new List<string>();
         public List<string> Repositories { get; set; } = new List<string>();
         public List<string> Services { get; set; } = new List<string>();
-        public List<string> Contollers { get; set; } = new List<string>();
+        public List<string> Controllers { get; set; } = new List<string>();
+        public List<string> RestClients { get; set; } = new List<string>();
     }
 }

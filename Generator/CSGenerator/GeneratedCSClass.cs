@@ -5,8 +5,9 @@ using System.Linq;
 namespace CodeGenerator.Generator
 {
     public class GeneratedCSClass : BaseGeneratedClass
-    { 
-        public bool ImplementsInterface { get; set; } = false;
+    {
+        public HashSet<string> ClassAnnotations = new HashSet<string>();
+        public string ImplementsInterface { get; set; } = null;
         private Dictionary<string, string> constructorProperties;
         public HashSet<string> ImportDependencies { get; } = new HashSet<string> { "System" };
         public List<GeneratedCSField> Fields { get; } = new List<GeneratedCSField>();
@@ -94,7 +95,8 @@ namespace CodeGenerator.Generator
             return dependencies + "\n"
                 + "namespace " + Namespace + "\n"
                 + "{\n"
-                + "public class " + Name + $"{(ImplementsInterface ? $" : I{Name}" : "")}" + "\n"
+                + string.Join("\n", ClassAnnotations) + "\n"
+                + "public class " + Name + $"{(ImplementsInterface == null ? "" : $" : {ImplementsInterface}")}" + "\n"
                 + "{\n"
                 + fields
                 + GenerateConstructor()

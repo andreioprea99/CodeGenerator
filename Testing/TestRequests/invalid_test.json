@@ -1,0 +1,184 @@
+{
+    "type": "CS",
+    "entities": [
+      {
+        "name": "User",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "primaryKey": true
+          },
+          {
+            "name": "userName",
+            "type": "String"
+          },
+          {
+            "name": "role",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "name": "Institution",
+        "fields": [
+          {
+            "name": "id",
+            "type": "Long",
+            "primaryKey": true
+          },
+          {
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "name": "cui",
+            "type": "String"
+          },
+          {
+            "name": "userId",
+            "type": "Long",
+            "references": [
+              {
+                "referencedEntity": "User",
+                "referencedField": "id",
+                "type": "ManyToOne"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "dtos": [
+      {
+        "name": "UserInstitutionPair",
+        "type": "read",
+        "fields": [
+          {
+            "name": "userName",
+            "projecting": {
+              "entityName": "User",
+              "fieldName": "userName"
+            }
+          },
+          {
+            "name": "instituionName",
+            "projecting": {
+              "entityName": "Institution",
+              "fieldName": "name"
+            }
+          }
+        ]
+      },
+      {
+        "name": "UserReadDTO",
+        "type": "read",
+        "fields": [
+          {
+            "name": "userName",
+            "projecting": {
+              "entityName": "User",
+              "fieldName": "userName"
+            }
+          },
+          {
+            "name": "userRole",
+            "projecting": {
+              "entityName": "User",
+              "fieldName": "role"
+            }
+          }
+        ]
+      },
+      {
+        "name": "UserInsertDTO",
+        "type": "insert",
+        "fields": [
+          {
+            "name": "userName",
+            "projecting": {
+              "entityName": "User",
+              "fieldName": "userName"
+            }
+          }
+        ]
+      }
+    ],
+    "repositories": [
+      {
+        "name": "UserRepository",
+        "dtos": [ "UserReadDTO", "UserInsertDTO" ]
+      },
+      {
+        "name": "UserInsitutionPairRepository",
+        "dtos": [ "UserInstitutionPair" ]
+      }
+    ],
+    "services": [
+      {
+        "name": "UserService",
+        "repositories": [ "UserRepository", "UserInsitutionPairRepository" ]
+      },
+      {
+        "name": "ExternalService"
+      }
+    ],
+    "controllers": [
+      {
+        "name": "UserController",
+        "routes": [
+          {
+            "path": "/users/{id}",
+            "type": "wrongType",
+            "responseType": "UserReadDTO",
+            "parameters": [
+              {
+                "name": "id",
+                "type": "long"
+              }
+            ]
+          },
+          {
+            "path": "/users",
+            "type": "post",
+            "responseType": "UserReadDTO",
+            "parameters": [
+              {
+                "name": "user",
+                "type": "UserInsertDTO"
+              }
+            ]
+          },
+          {
+            "path": "/users",
+            "type": "post",
+            "responseType": "long",
+            "parameters": [
+              {
+                "name": "User1",
+                "type": "UserInsertDTO"
+              },
+              {
+                "name": "User2",
+                "type": "UserInsertDTO"
+              }
+            ]
+          }
+        ],
+        "services": [ "UserService" ]
+      }
+    ],
+    "microservices": [
+      {
+        "name": "testMicro",
+        "entities": ["User", "Institution"],
+        "dtos": [ "UserReadDTO", "UserInsertDTO", "UserInstitutionPair" ],
+        "services": [ "UserService" ],
+        "repositories": [ "UserRepository", "UserInsitutionPairRepository" ],
+        "controllers": [ "UserController" ]
+      }
+    ]
+  
+  
+  }
+  

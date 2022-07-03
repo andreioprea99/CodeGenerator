@@ -89,48 +89,65 @@
           }
         }
       ]
-    },
-    {
-      "name": "UserInsertDTO",
-      "type": "insert",
-      "fields": [
-        {
-          "name": "userName",
-          "projecting": {
-            "entityName": "User",
-            "fieldName": "userName"
-          }
-        }
-      ]
     }
   ],
   "repositories": [
     {
       "name": "UserRepository",
-      "dtos": [ "UserReadDTO", "UserInsertDTO" ]
-    },
-    {
-      "name": "UserInsitutionPairRepository",
-      "dtos": [ "UserInstitutionPair" ]
+      "dtos": [ "UserReadDTO", "UserInstitutionPair" ]
     }
   ],
   "services": [
     {
       "name": "UserService",
-      "repositories": [ "UserRepository", "UserInsitutionPairRepository" ]
-    },
-    {
-      "name": "ExternalService"
+      "repositories": [ "UserRepository" ]
     }
   ],
-  "controllers": [],
+  "controllers": [
+    {
+      "name": "UserController",
+      "routes": [
+        {
+          "path": "/users/{id}",
+          "type": "get",
+          "responseType": "UserReadDTO",
+          "parameters": [
+            {
+              "name": "id",
+              "type": "long"
+            }
+          ]
+        },
+        {
+          "path": "/users",
+          "type": "post",
+          "responseType": "long",
+          "parameters": [
+            {
+              "name": "user",
+              "type": "UserReadDTO"
+            }
+          ]
+        }
+      ],
+      "services": [ "UserService" ]
+    }
+  ],
+  "restClients": [
+    {
+      "name": "UserClient",
+      "for": "UserController"
+    }
+  ],
   "microservices": [
     {
-      "name": "testMicro",
-      "entities": ["User", "Institution"],
-      "dtos": [ "UserReadDTO", "UserInsertDTO", "UserInstitutionPair" ],
+      "name": "PartialMicroservice",
+      "entities": [ "User", "Institution" ],
+      "dtos": [ "UserReadDTO", "UserInstitutionPair" ],
       "services": [ "UserService" ],
-      "repositories": [ "UserRepository", "UserInsitutionPairRepository" ]
+      "repositories": [ "UserRepository" ],
+      "controllers": [ "UserController" ],
+      "restClients": [ "UserClient" ]
     }
   ]
 
