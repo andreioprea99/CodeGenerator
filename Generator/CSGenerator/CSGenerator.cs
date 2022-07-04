@@ -214,8 +214,10 @@ namespace CodeGenerator.Generator
                             break;
                     }
                 }
+                generatedRepository.AddConstructorField($"{repository.Name}DBContext", $"{repository.Name}DBContextObject", true);
                 generatedRepositories.Add(generatedRepository);
                 generatedRepositories.Add(new GeneratedCSInterface(generatedRepository));
+                generatedRepositories.Add(new GeneratedCSContext(specs, repository.Name));
             }
             return generatedRepositories;
         }
@@ -278,7 +280,9 @@ namespace CodeGenerator.Generator
                 return new List<BaseGeneratedClass>();
             List<BaseGeneratedClass> result = new List<BaseGeneratedClass>();
             result = generatedClasses.Where(generatedClass => modelsNames.Contains(generatedClass.Name) ||
-                                                             (modelsNames.Contains(generatedClass.Name[1..]) && generatedClass is GeneratedCSInterface)).ToList();
+                                                             (modelsNames.Contains(generatedClass.Name[1..]) && generatedClass is GeneratedCSInterface) ||
+                                                             (generatedClass is GeneratedCSContext && modelsNames.Contains(generatedClass.Name.Substring(0, generatedClass.Name.Length - 9)))
+                                                             ).ToList();
             result.AsParallel().ForAll(generatedClass => generatedClass.Namespace = microserviceName);
             return result;
         }

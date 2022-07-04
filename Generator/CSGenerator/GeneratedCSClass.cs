@@ -67,14 +67,23 @@ namespace CodeGenerator.Generator
             ImportDependencies.Add(dependency);
         }
 
-        public void AddConstructorField(string type, string name)
+        public void AddConstructorField(string type, string name, bool notInterface = false)
         {
             if (constructorProperties == null)
             {
                 constructorProperties = new Dictionary<string, string>();
             }
-            constructorProperties.Add($"I{type}", name);
-            Fields.Add(new GeneratedCSField($"I{type}", name, "private"));
+            if (notInterface)
+            {
+                constructorProperties.Add($"{type}", name);
+                Fields.Add(new GeneratedCSField($"{type}", name, "private"));
+            }
+            else
+            {
+                constructorProperties.Add($"I{type}", name);
+                Fields.Add(new GeneratedCSField($"I{type}", name, "private"));
+            }
+            
         }
 
         private string GenerateConstructor()
