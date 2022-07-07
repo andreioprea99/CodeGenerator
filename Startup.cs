@@ -24,6 +24,12 @@ namespace CodeGenerator
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(o => o.AddPolicy("AllowAll", builder =>
+            {
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            }));
             services.Configure<MongoDBSettings>(Configuration.GetSection("MongoDB"));
             services.AddSingleton<MongoDBService>();
             services.AddSingleton<MainGenerator>();
@@ -38,7 +44,7 @@ namespace CodeGenerator
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-
+            app.UseCors("AllowAll");
             app.UseDeveloperExceptionPage();
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "CodeGenerator v1"));
