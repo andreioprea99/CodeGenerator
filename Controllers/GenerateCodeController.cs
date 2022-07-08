@@ -49,7 +49,7 @@ namespace CodeGenerator.Controllers
             // Create directory for the generated project
             Directory.CreateDirectory(path);
             await _generator.Generate(request, path);
-            return CreatedAtAction(nameof(GetByID), new { id }, request);
+            return Ok(new { id });
         }
 
         [HttpPost("{id}")]
